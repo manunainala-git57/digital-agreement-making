@@ -41,12 +41,18 @@ export async function createAgreement(req, res) {
 
 export async function getMyAgreements(req, res) {
   try {
-    const agreements = await Agreement.find({ creator: req.user.id });
-    res.json({ agreements });
+    const agreements = await Agreement.find({ creator: req.user.id })
+      .sort({ createdAt: -1 }); // Sorting by createdAt, latest first
+
+    res.json({
+      agreements,
+    });
   } catch (err) {
     res.status(500).json({ error: 'Error fetching agreements' });
   }
 }
+
+
 
 export const signAgreement = async (req, res) => {
   const { id } = req.params;

@@ -5,11 +5,12 @@ import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/create', protect, createAgreement);
-router.get('/my-agreements', protect, getMyAgreements);
-router.post('/:id/sign', signAgreement);
-router.get('/:id/download', downloadAgreementPdf);
 router.get('/search', searchByTitle);
+router.get('/my-agreements', protect, getMyAgreements);
+router.get('/:id/download', downloadAgreementPdf);
+router.post('/:id/sign', signAgreement);
+router.post('/create', protect, createAgreement);
+
 
 
 
