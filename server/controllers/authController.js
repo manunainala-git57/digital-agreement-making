@@ -42,3 +42,38 @@ export async function login(req, res) {
         res.status(500).json({ error: 'Login failed' });
     }
 }
+
+export const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error('❌ Error fetching profile:', err);
+    res.status(500).json({ error: 'Error fetching profile' });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user._id; // Provided by protect middleware
+    const { fullName } = req.body;
+
+    if (!fullName || fullName.trim() === '') {
+      return res.status(400).json({ message: 'Full name is required' });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { fullName },
+      { new: true }
+    ).select('-password'); // Don't return password
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

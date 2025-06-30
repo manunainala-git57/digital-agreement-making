@@ -1,34 +1,54 @@
-
 // utils/sendEmail.js
-import sgMail from '@sendgrid/mail';
+import SibApiV3Sdk from 'sib-api-v3-sdk';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+defaultClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
 
-export const sendInvitationEmails = async (inviteeEmails, title, content, agreementId) => {
-  // Loop through each email and send the invitation
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+export const sendInvitationEmails = async (inviteeEmails, agreement) => {
+  const { title, content, _id } = agreement;
+
   for (const to of inviteeEmails) {
-    const msg = {
-      to, // Recipient's email
-      from: process.env.FROM_EMAIL, // Your sender email (e.g., noreply@yourapp.com)
-      templateId: process.env.SENDGRID_TEMPLATE_ID, // Use your SendGrid dynamic template ID here
-      dynamic_template_data: {
-        email: to,
-        title: title,
-        content: content,
-        link: `http://localhost:3000/agreements/${agreementId}`, // Replace with your actual frontend link
-      }
+    const email = {
+      to: [{ email: to }],
+      sender: {
+        email: process.env.FROM_EMAIL,
+        name: 'Agreema'
+      },
+      subject: `You're invited to sign: ${title}`,
+      htmlContent: `
+          <div style="font-family: Arial, sans-serif; padding: 16px; color: #333;">
+            <p style="font-size: 16px; font-weight: bold; color: #222;">
+              Hello <span style="color: #000;"><strong>${to}</strong></span>,
+            </p>
+            <p style="font-size: 15px;">You are invited to sign an agreement titled:</p>
+            <h2 style="color: #005bbb; font-size: 20px;">${title}</h2>
+            <p style="font-size: 15px;">${content}</p>
+
+            <div style="margin: 24px 0;">
+              <a href="${process.env.FRONTEND_BASE_URL}/agreements/${_id}"
+                style="display: inline-block; padding: 12px 20px; background-color: #007bff; color: #fff;
+                        text-decoration: none; font-weight: bold; border-radius: 5px; font-size: 16px;">
+                Click to View and Sign
+              </a>
+            </div>
+
+            <p style="font-size: 13px; color: #666;">If the button doesn't work, copy and paste this link into your browser:</p>
+            <p style="font-size: 12px; color: #666;">${process.env.FRONTEND_BASE_URL}/agreements/${_id}</p>
+          </div>
+        `
+
     };
 
     try {
-      // Send the email using SendGrid
-      await sgMail.send(msg);
+      await apiInstance.sendTransacEmail(email);
       console.log(`✅ Email sent to ${to}`);
-    } catch (error) {
-      console.error(`❌ Failed to send email to ${to}:`, error);
-      // Optional: Add error handling (e.g., add to failed list)
+    } catch (err) {
+      console.error(`❌ Failed to send email to ${to}:`, err?.response?.body || err.message);
     }
   }
 };

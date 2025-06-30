@@ -1,113 +1,150 @@
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
-export const generateAgreementPdf = async (agreement) => {
-  const { title, content, signedBy, _id } = agreement;
+export const generateAgreementPdf = async (agreement, senderSignature, recipientSignature) => {
+  const { title, content, _id, creator } = agreement;
 
-  // Create a new PDF document
   const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([600, 800]);
+  const { height, width } = page.getSize();
 
-  // Embed a standard font (Helvetica)
-  const font = await pdfDoc.embedStandardFont('Helvetica'); // Correct way to use Helvetica
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const normalFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  // Set up margins and page size
-  const page = pdfDoc.addPage([600, 800]); // Standard A4 size
-  const { height } = page.getSize();
-  const margin = 50; // Margin size from the edges
-  const lineHeight = 15;
-  let yPosition = height - margin;
+  const margin = 50;
+  let y = height - margin;
 
-  // Title: Add the Agreement title
+  // Title
+  const titleWidth = boldFont.widthOfTextAtSize(title, 24);
   page.drawText(title, {
-    x: margin,
-    y: yPosition,
-    font,
+    x: (width - titleWidth) / 2,
+    y,
+    font: boldFont,
     size: 24,
     color: rgb(0, 0, 0),
   });
-  yPosition -= lineHeight * 2; // Add some space after the title
 
-  // Content: Add the content of the agreement
-  page.drawText(content, {
-    x: margin,
-    y: yPosition,
-    font,
-    size: 12,
-    color: rgb(0, 0, 0),
-    maxWidth: 500,
-  });
-  yPosition -= lineHeight * 4; // Add space after content
+  y -= 60;
 
-  // Draw Signatures Section with better styling
-  page.drawText('Signatures:', {
+  // Agreement Objective
+  page.drawText('Agreement Objective', {
     x: margin,
-    y: yPosition,
-    font,
+    y,
+    font: boldFont,
     size: 18,
     color: rgb(0, 0, 0),
   });
-  yPosition -= lineHeight * 2;
 
-  // Loop through each signature and display them
-  signedBy.forEach(({ email, type, value }, index) => {
-    page.drawText(`Email: ${email}`, {
+  y -= 30;
+
+  // Wrap and render content
+  const wrappedContent = content?.match(/.{1,80}(\s|$)/g) || [content];
+  for (const line of wrappedContent) {
+    page.drawText(line.trim(), {
       x: margin,
-      y: yPosition,
-      font,
-      size: 12,
+      y,
+      font: normalFont,
+      size: 14,
       color: rgb(0, 0, 0),
     });
-    yPosition -= lineHeight;
+    y -= 20;
+  }
 
-    page.drawText(`Type: ${type}`, {
-      x: margin,
-      y: yPosition,
-      font,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
-    yPosition -= lineHeight;
+  // Fixed Y for signatures
+  const sigBaseY = 150;
 
-    page.drawText(`Signature: ${value}`, {
-      x: margin,
-      y: yPosition,
-      font,
-      size: 12,
-      color: rgb(0, 0, 0),
-      maxWidth: 500,
-    });
-
-    // Add a signature line (like an actual signature box)
-    page.drawLine({
-      start: { x: margin, y: yPosition - 5 },
-      end: { x: 500, y: yPosition - 5 },
-      thickness: 1,
-      color: rgb(0, 0, 0),
-    });
-
-    yPosition -= lineHeight * 3; // Space for the next signature
+  // === Created By (left) ===
+  page.drawText('Created By', {
+    x: margin,
+    y: sigBaseY,
+    font: boldFont,
+    size: 16,
+    color: rgb(0, 0, 0),
   });
 
-  // Add the Agreement ID as a footer (optional)
+  if (senderSignature?.type === 'typed') {
+    page.drawText(senderSignature.value, {
+      x: margin,
+      y: sigBaseY - 25,
+      font: normalFont,
+      size: 14,
+    });
+  } else if (senderSignature?.type === 'image') {
+    const base64 = senderSignature.value.split(',')[1];
+
+    let img;
+    if (senderSignature.value.startsWith('data:image/png')) {
+      img = await pdfDoc.embedPng(Buffer.from(base64, 'base64'));
+    } else if (senderSignature.value.startsWith('data:image/jpeg')) {
+      img = await pdfDoc.embedJpg(Buffer.from(base64, 'base64'));
+    } else {
+      throw new Error('Unsupported image format for sender signature');
+    }
+
+    page.drawImage(img, {
+      x: margin,
+      y: sigBaseY - 60, // push image further down
+      width: 100,
+      height: 50,
+    });
+  } else {
+    page.drawText(creator?.fullName || agreement.creatorEmail, {
+      x: margin,
+      y: sigBaseY - 25,
+      font: normalFont,
+      size: 14,
+    });
+  }
+
+  // === Accepted By (right) ===
+  page.drawText('Accepted By', {
+    x: width - margin - 100,
+    y: sigBaseY,
+    font: boldFont,
+    size: 16,
+    color: rgb(0, 0, 0),
+  });
+
+  if (recipientSignature?.type === 'typed') {
+    page.drawText(recipientSignature.value, {
+      x: width - margin - 100,
+      y: sigBaseY - 25,
+      font: normalFont,
+      size: 14,
+    });
+  } else if (recipientSignature?.type === 'image') {
+    const base64 = recipientSignature.value.split(',')[1];
+
+    let img;
+    if (recipientSignature.value.startsWith('data:image/png')) {
+      img = await pdfDoc.embedPng(Buffer.from(base64, 'base64'));
+    } else if (recipientSignature.value.startsWith('data:image/jpeg')) {
+      img = await pdfDoc.embedJpg(Buffer.from(base64, 'base64'));
+    } else {
+      throw new Error('Unsupported image format for recipient signature');
+    }
+
+    page.drawImage(img, {
+      x: width - margin - 100,
+      y: sigBaseY - 60, // push image below the heading
+      width: 100,
+      height: 50,
+    });
+  }
+
+  // === Footer ===
   page.drawText(`Agreement ID: ${_id}`, {
     x: margin,
-    y: 50,
-    font,
+    y: 40,
+    font: normalFont,
     size: 10,
     color: rgb(0.5, 0.5, 0.5),
   });
 
-  // Add a watermark (e.g., "CONFIDENTIAL")
-  page.drawText('CONFIDENTIAL', {
-    x: 200,
-    y: height / 2,
-    font,
-    size: 50,
-    color: rgb(0.9, 0.9, 0.9),
-    opacity: 0.3, // Make the watermark faint
-  });
-
-  // Password protect the PDF (optional)
-  const pdfBytes = await pdfDoc.save({ useObjectStreams: false });
-
-  return pdfBytes;
+  return await pdfDoc.save();
 };
+
+
+
+
+
+

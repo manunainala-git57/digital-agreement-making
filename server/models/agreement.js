@@ -16,11 +16,12 @@ const agreementSchema = new Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
   creator: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  creatorEmail: { type: String, required: true },
   inviteeEmails: [{ type: String }],
   signedBy: [signatureSchema],
   status: {
     type: String,
-    enum: ['pending', 'partially-signed', 'fully-signed'], // 🆕 added this
+    enum: ['pending', 'partially-signed', 'fully-signed'], 
     default: 'pending'
   },
   createdAt: { type: Date, default: Date.now }

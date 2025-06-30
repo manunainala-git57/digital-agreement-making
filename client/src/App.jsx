@@ -15,6 +15,10 @@ import MyAgreements from './components/MyAgreements';
 import SignAgreements from './components/SignAgreements';
 import Profile from './components/Profile';
 
+// Using a ProtectedRoute component is not mandatory, but it's a best practice that helps you avoid repeating logic and makes your code:
+import ProtectedRoute from './components/ProtectedRoutes.jsx';
+ // we need not use <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
+ // instead we can use <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
 
 
@@ -23,21 +27,36 @@ const App = () => {
 
   return (
     <ErrorBoundary>
-    <>
-      {user && <Navbar />}
-      <Routes>
-        <Route path="/" element={user ? <Home /> : <Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/create-agreement" element={<CreateAgreement />} />
-        <Route path="/my-agreements" element={user ? <MyAgreements /> : <Navigate to="/login" />} />
-        <Route path="/sign-agreements" element={user ? <SignAgreements /> : <Navigate to="/login" />} />
-        <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
-      </Routes>
-      <ToastContainer />
-    </>
+      <>
+        {user && <Navbar />}
+        <Routes>
+          <Route path="/" element={
+            <ProtectedRoute><Home /></ProtectedRoute>
+          } />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/create-agreement" element={
+            <ProtectedRoute><CreateAgreement /></ProtectedRoute>
+          } />
+          <Route path="/my-agreements" element={
+            <ProtectedRoute><MyAgreements /></ProtectedRoute>
+          } />
+          <Route path="/sign-agreements" element={
+            <ProtectedRoute><SignAgreements /></ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute><Profile /></ProtectedRoute>
+          } />
+        </Routes>
+        <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar
+        closeOnClick
+        pauseOnHover />
+      </>
     </ErrorBoundary>
-);
-};
+  );
+  };
 
 export default App;
