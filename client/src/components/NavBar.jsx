@@ -1,67 +1,90 @@
 import React, { useContext, useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, Stack, IconButton, Avatar, Menu, MenuItem } from '@mui/material';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Stack,
+  IconButton,
+  Avatar,
+  Menu,
+  MenuItem,
+  useMediaQuery,
+  useTheme,
+  Tooltip
+} from '@mui/material';
+
+import {
+  AccountCircle as AccountCircleIcon,
+  ExitToApp as ExitToAppIcon
+} from '@mui/icons-material';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';  // For profile icon
-import ExitToAppIcon from '@mui/icons-material/ExitToApp'; // For sign out icon
 
 const Navbar = () => {
-  const { user, logout } = useContext(AuthContext); // Use logout from context
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // State for managing the dropdown menu
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget); // Open menu when avatar is clicked
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null); // Close menu when an option is clicked or clicked outside
-  };
+  const handleMenuClick = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
 
   const handleLogout = () => {
-    logout(); // Clears user, token, headers
+    logout();
     toast.success('Logged out successfully!');
     navigate('/login');
-    handleClose(); // Close the menu after logout
+    handleMenuClose();
   };
 
+  // if (isMobile) return null; 
+
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{ background: 'linear-gradient(to right, #1976d2, #0d47a1)' }}>
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Digital Agreements
+        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold', letterSpacing: 1 }}>
+          Agreema
         </Typography>
 
         {user ? (
-          <Stack direction="row" spacing={2}>
-            <Button color="inherit" component={Link} to="/">Home</Button>
-            <Button color="inherit" component={Link} to="/my-agreements">My Agreements</Button>
-            <Button color="inherit" component={Link} to="/sign-agreements">Sign Agreements</Button>
+          <Stack direction="row" spacing={2} alignItems="center">
+            {!isMobile && (
+              <>
+                <Button color="inherit" component={Link} to="/">Home</Button>
+                <Button color="inherit" component={Link} to="/my-agreements">My Agreements</Button>
+                <Button color="inherit" component={Link} to="/sign-agreements">Sign Agreements</Button>
 
-            {/* Profile dropdown icon */}
-            <IconButton onClick={handleClick} color="inherit">
-              <Avatar alt={user.name} src={user.profileImage || ''} />
-            </IconButton>
+                <IconButton onClick={handleMenuClick} color="inherit">
+                  <Avatar alt={user.name} src={user.profileImage || ''} />
+                </IconButton>
 
-            {/* Profile menu */}
-            <Menu
-              anchorEl={anchorEl}
-              open={open}
-              onClose={handleClose}
-            >
-              <MenuItem component={Link} to="/profile" onClick={handleClose}>
-                <AccountCircleIcon sx={{ marginRight: 1 }} />
-                Profile
-              </MenuItem>
-              <MenuItem onClick={handleLogout}>
-                <ExitToAppIcon sx={{ marginRight: 1 }} />
-                Sign Out
-              </MenuItem>
-            </Menu>
+                <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+                  <MenuItem component={Link} to="/profile" onClick={handleMenuClose}>
+                    <AccountCircleIcon sx={{ marginRight: 1 }} />
+                    Profile
+                  </MenuItem>
+                  <MenuItem onClick={handleLogout}>
+                    <ExitToAppIcon sx={{ marginRight: 1 }} />
+                    Sign Out
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
+
+            {/* Mobile view logout icon */}
+            {isMobile && (
+              <Tooltip title="Logout">
+                <IconButton onClick={handleLogout} color="inherit">
+                  <ExitToAppIcon />
+                </IconButton>
+              </Tooltip>
+            )}
           </Stack>
         ) : (
           <Stack direction="row" spacing={2}>
@@ -70,6 +93,7 @@ const Navbar = () => {
           </Stack>
         )}
       </Toolbar>
+
     </AppBar>
   );
 };

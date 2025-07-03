@@ -10,6 +10,7 @@ import {
   Divider,
   TextField,
   Button,
+  Paper,
 } from '@mui/material';
 import { AuthContext } from '../context/AuthContext';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -18,7 +19,6 @@ import { toast } from 'react-toastify';
 
 const Profile = () => {
   const { user, setUser } = useContext(AuthContext);
-
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(user.fullName);
 
@@ -39,13 +39,27 @@ const Profile = () => {
     }
   };
 
-
   return (
-    <Container maxWidth="sm" sx={{ mt: 10 }}>
-      <Card elevation={4} sx={{ borderRadius: 4, p: 3 }}>
-        <Box display="flex" flexDirection="column" alignItems="center" gap={1.5}>
+    <Container  maxWidth="sm" sx={{ mt: 10, display: 'flex', justifyContent: 'center' }}>
+      <Paper
+        elevation={3}
+        sx={{
+          borderRadius: 4,
+          p: 4,
+          width: '100%',
+          bgcolor: '#fefefe',
+          boxShadow: 4,
+        }}
+      >
+        <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
           <Avatar
-            sx={{ width: 100, height: 100, bgcolor: '#1976d2', fontSize: 40 }}
+            sx={{
+              width: 100,
+              height: 100,
+              bgcolor: '#1565c0',
+              fontSize: 40,
+              boxShadow: 2,
+            }}
             src={user.profileImage || ''}
           >
             {!user.profileImage && <AccountCircleIcon fontSize="inherit" />}
@@ -77,17 +91,17 @@ const Profile = () => {
               </>
             ) : (
               <>
-                <Typography variant="body1">
+                <Typography variant="body1" color="text.secondary">
                   <strong>Full Name:</strong> {user.fullName}
                 </Typography>
-                <Typography variant="body1">
+                <Typography variant="body1" color="text.secondary">
                   <strong>Email:</strong> {user.email}
                 </Typography>
               </>
             )}
           </Box>
 
-          <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+          <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'center' }}>
             {isEditing ? (
               <>
                 <Button variant="contained" color="primary" onClick={handleSave}>
@@ -104,7 +118,7 @@ const Profile = () => {
             )}
           </Box>
         </CardContent>
-      </Card>
+      </Paper>
     </Container>
   );
 };
