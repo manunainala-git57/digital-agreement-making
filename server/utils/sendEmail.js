@@ -30,7 +30,7 @@ export const sendInvitationEmails = async (inviteeEmails, agreement) => {
             <p style="font-size: 15px;">${content}</p>
 
             <div style="margin: 24px 0;">
-              <a href="${process.env.FRONTEND_BASE_URL}/agreements/${_id}"
+              <a href="https://agreema.vercel.app"
                 style="display: inline-block; padding: 12px 20px; background-color: #007bff; color: #fff;
                         text-decoration: none; font-weight: bold; border-radius: 5px; font-size: 16px;">
                 Click to View and Sign
@@ -38,7 +38,7 @@ export const sendInvitationEmails = async (inviteeEmails, agreement) => {
             </div>
 
             <p style="font-size: 13px; color: #666;">If the button doesn't work, copy and paste this link into your browser:</p>
-            <p style="font-size: 12px; color: #666;">${process.env.FRONTEND_BASE_URL}/agreements/${_id}</p>
+            <p style="font-size: 12px; color: #666;">https://agreema.vercel.app</p>
           </div>
         `
 
