@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://agreema-digital-agreement-making.onrender.com',
+  baseURL: 'https://agreema-digital-agreement-making.onrender.com/api',
   withCredentials: true, // for session cookies if needed
 });
 
