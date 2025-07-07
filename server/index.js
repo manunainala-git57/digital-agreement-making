@@ -10,10 +10,11 @@ dotenv.config();
 
 const app = express();
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'https://agreema.vercel.app',
   methods: ['GET', 'POST' , 'PATCH'],
   allowedHeaders: ['Content-Type' ,'Authorization'],
   credentials: true
+  
 }));
 
 app.use(express.json());
