@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useContext } from 'react';
 import {
   Container,
   Typography,
@@ -9,10 +9,10 @@ import {
   useTheme,
   Grid,
   Card,
-  CardContent,
   Avatar,
-  Divider,
-  Link
+  Link,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -23,18 +23,28 @@ import {
   Assessment as StatusIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import { Link as RouterLink } from 'react-router-dom';
+
 
 const Home = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { user } = useContext(AuthContext);
 
-  const handleCreateAgreement = () => {
-    navigate('/create-agreement');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  const handleRestrictedAction = (path) => {
+    if (user) {
+      navigate(path);
+    } else {
+      setOpenSnackbar(true);
+    }
   };
 
-  const handleMyAgreements = () => {
-    navigate('/my-agreements');
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
   };
 
   const features = [
@@ -61,7 +71,8 @@ const Home = () => {
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+
       <Container maxWidth="md" sx={{ flexGrow: 1, py: 6, pb: { xs: 10, sm: 6 } }}>
         {/* Hero Section */}
         <Box textAlign="center" mb={6}>
@@ -93,7 +104,7 @@ const Home = () => {
               variant="contained"
               size="large"
               startIcon={<AddIcon />}
-              onClick={handleCreateAgreement}
+              onClick={() => handleRestrictedAction('/create-agreement')}
               sx={{
                 px: 4,
                 py: 1.5,
@@ -111,7 +122,7 @@ const Home = () => {
               variant="outlined"
               size="large"
               startIcon={<DescriptionIcon />}
-              onClick={handleMyAgreements}
+              onClick={() => handleRestrictedAction('/my-agreements')}
               sx={{
                 px: 4,
                 py: 1.5,
@@ -128,6 +139,18 @@ const Home = () => {
             </Button>
           </Stack>
         </Box>
+
+        {/* Snackbar for login prompt */}
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={4000}
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={handleSnackbarClose} severity="warning" sx={{ width: '100%' }}>
+            Please login to use this feature.
+          </Alert>
+        </Snackbar>
 
         {/* Features Section */}
         <Box sx={{ mt: 8 }}>
@@ -195,24 +218,41 @@ const Home = () => {
             ))}
           </Box>
         </Box>
-
       </Container>
 
       {/* Footer */}
-      <Box component="footer" sx={{ backgroundColor: '#1565c0', color: '#fff', py: 3 ,display: { xs: 'none', sm: 'block' }}} >
+      <Box component="footer" sx={{ backgroundColor: '#1565c0', color: '#fff', py: 3, display: { xs: 'none', sm: 'block' } }}>
         <Container maxWidth="lg">
           <Grid container justifyContent="space-between" alignItems="center">
             <Grid item xs={12} sm={6} sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
               <Typography variant="body2">
-                © {new Date().getFullYear()} Agreema — A Personal Project by Manu
+                © {new Date().getFullYear()} Agreema — A Project by Manu
               </Typography>
             </Grid>
 
             <Grid item xs={12} sm={6} sx={{ textAlign: { xs: 'center', sm: 'right' }, mt: { xs: 2, sm: 0 } }}>
               <Stack direction="row" spacing={2} justifyContent="center" alignItems="center">
-                <Link href="#" underline="hover" color="inherit" fontSize="0.875rem">About</Link>
-                <Link href="#" underline="hover" color="inherit" fontSize="0.875rem">GitHub</Link>
-                <Link href="#" underline="hover" color="inherit" fontSize="0.875rem">Contact</Link>
+                <Link
+                  href="https://github.com/manunainala-git57/digital-agreement-making.git"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                >
+                  GitHub
+                </Link>
+                <Link component={RouterLink} to="/contact" underline="hover" color="inherit">
+                  Contact
+                </Link>
+                <Link
+                  href="https://manunainala.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  underline="hover"
+                  color="inherit"
+                >
+                  About
+                </Link>
               </Stack>
             </Grid>
           </Grid>
@@ -223,4 +263,3 @@ const Home = () => {
 };
 
 export default Home;
-
