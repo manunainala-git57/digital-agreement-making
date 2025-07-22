@@ -262,8 +262,7 @@ const SignAgreements = () => {
           )}
         </Box>
       </Box>
-      {/* Signature Modal */}
-      {/* Unchanged modal code remains here */}
+      
     </Container>
   );
 };
