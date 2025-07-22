@@ -15,8 +15,14 @@ export async function register(req, res) {
         
         const token = sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         res.status(201).json({ message: 'User registered', user: userWithoutPassword, token });
+        const existing = await User.findOne({ email });
+        if (existing) {
+          return res.status(400).json({ error: 'User already exists' });
+        }
+
 
     } catch (err) {
+        console.error(err); 
         res.status(400).json({ error: 'User registration failed' });
     }
 }
